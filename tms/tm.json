@@ -1,19 +1,20 @@
 {
     "states":{
         "start":{
-            "a":["b","r"],
-            "b":["a","l", "accept"]
+            "0":["b","r"],
+            "1":["b","r"],
+            "b":["b","l", "accept"]
         },
         "accept":{
         }
 
 
     },
-    "steps": 10 ,
+    "steps": 20 ,
     "starting_state":"start",
     "blank": "b" ,
     "tape":{
-        "initial":"0100101110",
-        "head_index":12
+        "initial":"01",
+        "head_index":0
     }
 }

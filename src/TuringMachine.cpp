@@ -1,18 +1,20 @@
+#include <tuple>
+
 #include "TuringMachine.hpp"
 
 TuringMachine::TuringMachine(const nlohmann::json& config){
     auto tmStates = config["states"];
     int st = config["steps"];
-    std::string blank = config["blank"];
+    std::string bl = config["blank"];
     int head = config["tape"]["head_index"];
     std::string initial = config["tape"]["initial"];
     std::string start = config["starting_state"];
-
     
     int n = initial.size();
     for(int i = 0 ; i < n ; i++){
         tape.push_back(initial.substr(i, 1));
     }
+    blank = bl;
     headPos = head;
     steps = st;
     currentState =start;
@@ -38,7 +40,11 @@ TuringMachine::TuringMachine(const nlohmann::json& config){
                 }
                 return 0;
             }(toSee.value()[1]);
-            s.addTransition(transitionLeftSide, {replace, dir});
+            std::string toState = stateName;
+            if(toSee.value().size() > 2){
+                toState = toSee.value()[2];
+            }
+            s.addTransition(transitionLeftSide, std::tuple<std::string, int, std::string> (replace, dir, toState));
         }
         states[stateName] = s;
     }
@@ -54,8 +60,19 @@ nlohmann::json TuringMachine::current()const{
                     }
                     return ret;
                 }(tape)
-        }
+        },
+        {"state",currentState}
     };
+}
+
+nlohmann::json TuringMachine::current(const std::string& condition)const{
+    nlohmann::json ret= current();
+    ret["condition"] = condition;
+    return ret;
+}
+
+void out(nlohmann::json j){
+    std::cout << j["tape"] << ", " << j["head_index"] << " " << j["condition"]<< std::endl;
 }
 
 std::vector<nlohmann::json> TuringMachine::run(int flags){
@@ -63,15 +80,23 @@ std::vector<nlohmann::json> TuringMachine::run(int flags){
     ret.push_back(current());
     for(int i = 0 ;i < steps ; i++){
         auto move = states[currentState][getSymbolOnTape(headPos)];
-        std::string condition = "running";
-        if(move.second == 0){
-            condition = "halted"; 
+        if(std::get<1>(move) == 0){
+            ret.push_back(current("halted"));
+            break; 
         }
         else{
-            headPos += move.second;
-            currentState = 
+            writeSymbolToTape(headPos, std::get<0>(move));
+            headPos += std::get<1>(move); 
+            if(headPos < 0){
+                tape.push_front(blank);
+                headPos= 0;
+            }
+            else if(headPos >= (int)tape.size()){
+                tape.push_back(blank);
+            }
+            currentState= std::get<2>(move);
+            ret.push_back(current("running"));
         }
-        ret.push_back(current(), condition);
     }
     return ret;
 }
@@ -87,8 +112,9 @@ void TuringMachine::_dump()const{
     std::cout << "states : " << std::endl;
     for(auto it : states){
         std::cout<<"\t" << it.first << " : " << std::endl;
-        for(auto trans : it.second.getTransitions()){
-            std::cout <<"\t"<< trans.first << " -> " << trans.second.first << "," << trans.second.second << std::endl;
+        for(auto& trans : it.second.getTransitions()){
+            std::cout << "\t" << trans.first << " : " << "(" <<
+                std::get<0>(trans.second) << ", " << std::get<1>(trans.second) << ", " << std::get<2>(trans.second)<< ")" << std::endl;
         }
         std::cout << std::endl;
     }
@@ -99,4 +125,9 @@ void TuringMachine::_dump()const{
 
 std::string TuringMachine::getSymbolOnTape(int index)const{
     return tape[index];
+}
+
+
+void TuringMachine::writeSymbolToTape(int index, std::string sym){
+    tape[index] = sym;
 }

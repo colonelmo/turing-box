@@ -14,6 +14,7 @@ private:
     std::deque<std::string> tape;
     int headPos;
     std::string currentState; 
+    std::string blank;
     std::map<std::string, State> states;
     int steps;
 public:    
@@ -23,7 +24,9 @@ public:
     std::vector<nlohmann::json> run(int flags);
     void _dump()const;
     nlohmann::json current()const;
+    nlohmann::json current(const std::string& condition)const;
     std::string getSymbolOnTape(int index)const;
+    void writeSymbolToTape(int index, std::string sym);
 };
 
 #endif

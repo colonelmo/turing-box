@@ -29,7 +29,7 @@ int main(int argc, char** argv){
     //cout << "file : " << endl << readFromFile(argv[1]) << endl;
 
     TuringMachine tm(config);
-    cout << tm.current() << endl;
-    auto it =tm.run(TuringMachine::VERBOSE);
+//    tm._dump();
+    auto result =tm.run(TuringMachine::VERBOSE);
     return 0;
 }
