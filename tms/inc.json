@@ -1,0 +1,23 @@
+{
+    "states":{
+        "go_right":{
+            "0":["0","->"],
+            "1":["1","r"],
+            "b":["b","l", "inc"]
+        },
+        "inc":{
+            "0":["1","l","accept"],
+            "1":["0","l"],
+            "b":["1","l","accept"]
+        },
+        "accept":{
+        }
+    },
+    "steps": 1000 ,
+    "starting_state":"go_right",
+    "blank": "b" ,
+    "tape":{
+        "initial":"1111",
+        "head_index":0
+    }
+}
