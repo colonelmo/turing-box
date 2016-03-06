@@ -4,7 +4,7 @@
 #include "json/src/json.hpp"
 #include "TuringMachine.hpp"
 
-#include "debug.hpp"
+//#include "debug.hpp"
 
 std::string readFromFile(std::string path){
     std::ifstream ifs(path);
